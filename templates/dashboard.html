@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="dashboard">
+    <h2>Your Tasks</h2>
+
+    <div class="search-bar">
+        <form method="GET" action="{{ url_for('task_bp.dashboard') }}">
+            <input type="text" name="search" placeholder="Search tasks..." value="{{ search_query }}">
+            <button type="submit" class="btn-search">Search</button>
+        </form>
+    </div>
+
+    <div class="task-list">
+        {% if tasks %}
+            {% for task in tasks %}
+                <div class="task-card {% if task.completed %}completed{% endif %}">
+                    <h3>{{ task.title }}</h3>
+                    <div class="task-description">{{ task.description }}</div>
+                    <div class="task-meta">
+                        <span>Created: {{ task.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                        <span>Status: {{ 'Completed' if task.completed else 'Pending' }}</span>
+                    </div>
+                    <div class="task-actions">
+                        <a href="{{ url_for('task_bp.update_task', task_id=task.id) }}" class="btn-edit">Edit</a>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-tasks">No tasks found. Create a new task to get started!</div>
+        {% endif %}
+    </div>
+
+    <div class="action-buttons">
+        <a href="{{ url_for('task_bp.create_task') }}" class="btn-primary">Create New Task</a>
+    </div>
+</div>
+{% endblock %}

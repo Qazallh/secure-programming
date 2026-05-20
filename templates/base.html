@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Management System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <nav>
+        <div class="logo">Task Management System</div>
+        <div class="nav-links">
+            {% if session.user_id %}
+                <a href="{{ url_for('task_bp.dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('task_bp.create_task') }}">Create Task</a>
+                {% if session.is_admin %}
+                    <a href="{{ url_for('admin_bp.admin_dashboard') }}">Admin</a>
+                {% endif %}
+                <a href="{{ url_for('auth_bp.logout') }}">Logout ({{ session.username }})</a>
+            {% else %}
+                <a href="{{ url_for('auth_bp.login') }}">Login</a>
+                <a href="{{ url_for('auth_bp.register') }}">Register</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="container">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for message in messages %}
+                        <div class="flash-message">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

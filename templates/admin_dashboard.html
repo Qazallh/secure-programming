@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="admin-dashboard">
+    <h2>Admin Dashboard</h2>
+
+    <!-- User Management Section -->
+    <div class="admin-section">
+        <h3>User Management</h3>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Admin</th>
+                    <th>Task Count</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td>{{ user.username }}</td>
+                        <td>{{ 'Yes' if user.is_admin else 'No' }}</td>
+                        <td>{{ user.tasks|length }}</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('admin_bp.delete_user', user_id=user.id) }}" class="inline-form">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <button type="submit" class="btn-delete" {% if user.id == session.user_id %}disabled{% endif %}>Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Task Management Section -->
+    <div class="admin-section">
+        <h3>Task Management</h3>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Assigned To</th>
+                    <th>Created</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                    <tr>
+                        <td>{{ task.id }}</td>
+                        <td>{{ task.title }}</td>
+                        <td>{{ task.assigned_user.username }}</td>
+                        <td>{{ task.created_at.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ 'Completed' if task.completed else 'Pending' }}</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('admin_bp.assign_task') }}" class="inline-form">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <input type="hidden" name="task_id" value="{{ task.id }}">
+                                <select name="user_id">
+                                    {% for user in users %}
+                                        <option value="{{ user.id }}" {% if user.id == task.user_id %}selected{% endif %}>{{ user.username }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" class="btn-assign">Reassign</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- SQL query section -->
+    <div class="admin-section">
+        <h3>SQL Query</h3>
+        <form method="POST" action="{{ url_for('admin_bp.execute_query') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <div class="form-group">
+                <textarea name="query" rows="3" placeholder="Enter SQL query..." class="sql-input"></textarea>
+            </div>
+            <button type="submit" class="btn-primary">Execute Query</button>
+        </form>
+
+        {% if query_result %}
+            <h4>Query Results:</h4>
+            <pre class="query-results">{{ query }}</pre>
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        {% for column in query_result[0]._fields %}
+                            <th>{{ column }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in query_result %}
+                        <tr>
+                            {% for value in row %}
+                                <td>{{ value }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
